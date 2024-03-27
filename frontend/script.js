@@ -1,19 +1,46 @@
-document.querySelectorAll('.button').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.pdf'; // Aquí puedes especificar el tipo de archivo permitido
-        
-        input.onchange = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Aquí puedes realizar las validaciones necesarias antes de cargar el archivo
-                console.log('Archivo seleccionado:', file);
-            } else {
-                console.log('No se seleccionó ningún archivo.');
-            }
-        };
-        
-        input.click();
-    });
+const dropArea = document.querySelector('.drop-area');
+const dragText = dropArea.querySelector('h2');
+const button = dropArea.querySelector('button');
+const input = dropArea.querySelector('#input-file');
+let files;
+
+button.addEventListener ('click', (event) =>{
+    input.click();
 });
+
+input.addEventListener('change', (event) => {
+    files = this.files;
+    dropArea.classList.add("active");
+    showFiles(files);
+    dropArea.classList.remove("active");
+});
+
+dropArea.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    dropArea.classList.add("active");
+    dragText.textContent = "Suelta para subir los archivos";
+});
+
+dropArea.addEventListener('dragleave', (event) => {
+    dropArea.classList.remove("active");
+    dragText.textContent = "Arrastra y suelta el archivo";
+});
+
+dropArea.addEventListener('drop', (event) => {
+    dropArea.classList.remove("active");
+    dragText.textContent = "Arrastra y suelta el archivo";
+});
+
+function showFiles(files) {
+    if(files.length === undefined) {
+        processFile(files)
+    }else{
+        for(const file of files){
+            processFile(file);
+        }
+    }
+}
+
+function processFile(file) {
+    
+}
