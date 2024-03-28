@@ -9,7 +9,7 @@ button.addEventListener ('click', (event) =>{
 });
 
 input.addEventListener('change', (event) => {
-    files = this.files;
+    files = input.files;
     dropArea.classList.add("active");
     showFiles(files);
     dropArea.classList.remove("active");
@@ -22,11 +22,15 @@ dropArea.addEventListener('dragover', (event) => {
 });
 
 dropArea.addEventListener('dragleave', (event) => {
+    event.preventDefault();
     dropArea.classList.remove("active");
     dragText.textContent = "Arrastra y suelta el archivo";
 });
 
 dropArea.addEventListener('drop', (event) => {
+    event.preventDefault();
+    files = event.dataTransfer.files;
+    showFiles(files);
     dropArea.classList.remove("active");
     dragText.textContent = "Arrastra y suelta el archivo";
 });
@@ -42,5 +46,53 @@ function showFiles(files) {
 }
 
 function processFile(file) {
-    
+    const fileName = file.name;
+    const fileExtension = fileName.slice((fileName.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+    const validExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'];
+
+    if (validExtensions.includes('.' + fileExtension)) {
+        const fileReader = new FileReader ();
+        const id = `file-${Math.random().toString(32).substring(7)}`;
+
+        fileReader.addEventListener('load', (event) => {
+            const fileUrl = fileReader.result;
+            const doc = `
+                <div id="${id}" class="file-container">
+                    <doc src="${fileUrl}" alt="${file.name}" width="50">
+                    <div class="status">
+                        <span>${file.name}</span>
+                        <span class="status-text">
+                            Loading...
+                        </span>
+                    </div>
+                </div>
+            `;
+        const html = document.querySelector("#preview").innerHTML;
+        document.querySelector("#preview").innerHTML = doc + html;
+        });
+
+        fileReader.readAsDataURL(file);
+        uploadFile(file, id);
+    } else {
+        alert("No es un archivo válido");
+    }
+}
+
+async function uploadFile(file, id) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch("http://localhost:3000/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const responseText = await response.text();
+        console.log(responseText);
+
+        document.querySelector(`#${id} .status-text`).innerHTML = `<span class="success">Archivo subido correctamente</span>`
+    } catch (error) {
+        document.querySelector(`#${id} .status-text`).innerHTML = `<span class="failure">El archivo no pudo subirse</span>`
+    }
 }
